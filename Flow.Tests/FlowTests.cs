@@ -1,13 +1,10 @@
 ﻿using Staticsoft.TestServer;
-using Staticsoft.TestServer.Local;
 using Xunit;
 
 namespace Staticsoft.Flow.Tests;
 
-//public abstract class FlowTests<Startup> : TestBase<Startup>
-//    where Startup : class
-//{
-public class FlowTests : TestBase<LocalStartup>
+public abstract class FlowTests<Startup> : TestBase<Startup>
+    where Startup : class
 {
     [Fact]
     public async Task RunsJobUntilCompletion()

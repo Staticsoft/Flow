@@ -1,6 +1,8 @@
-﻿namespace Staticsoft.Flow.Tests;
+﻿using Staticsoft.TestServer.Local;
 
-//public class LocalFlowTests : FlowTests<LocalStartup>
-//{
+namespace Staticsoft.Flow.Tests;
 
-//}
+public class LocalFlowTests : FlowTests<LocalStartup>
+{
+
+}
