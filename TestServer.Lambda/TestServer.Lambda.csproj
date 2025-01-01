@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Staticsoft.$(MSBuildProjectName)</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Flow.Lambda\Flow.Lambda.csproj" />
+        <ProjectReference Include="..\TestServer\TestServer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Staticsoft.PartitionedStorage.AWS" Version="1.0.0-10" />
+        <PackageReference Include="Staticsoft.Messages.Sqs" Version="1.0.0-2" />
+        <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.4" />
+        <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="8.0.0" />
+    </ItemGroup>
+
+</Project>

@@ -12,7 +12,8 @@ public class StartupBase
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment _) => app
         .UseRouting()
-        .UseServerAPIRouting<Api>();
+        .UseServerAPIRouting<Api>()
+        .UseEndpoints(ConfigureEndpoints);
 
     protected virtual IServiceCollection RegisterServices(IServiceCollection services) => services
         .UseServerAPI<Api>(typeof(StartupBase).Assembly)
@@ -21,4 +22,6 @@ public class StartupBase
 
         .UseJob<CalculateSumOfSquaresJob, CalculateSumOfSquaresInput, CalculateSumOfSquaresOutput>()
         .UseOperation<CalculateSquareOperation, CalculateSquareInput, CalculateSquareOutput>();
+
+    protected virtual void ConfigureEndpoints(IEndpointRouteBuilder endpoints) { }
 }

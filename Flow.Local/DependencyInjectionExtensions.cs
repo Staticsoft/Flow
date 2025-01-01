@@ -11,5 +11,4 @@ public static class DependencyInjectionExtensions
             .UseFlow()
             .AddHostedService<FlowMessagePoll>()
             .AddSingleton(options);
-
 }
