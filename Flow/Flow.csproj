@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Staticsoft.$(MSBuildProjectName)</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <PackageId>Staticsoft.$(MSBuildProjectName)</PackageId>
+        <VersionPrefix>1.0.0</VersionPrefix>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/Staticsoft/Flow</RepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JeremyEspresso.MurmurHash" Version="0.0.1" />
+        <PackageReference Include="Staticsoft.Messages.Abstractions" Version="1.0.0-2" />
+        <PackageReference Include="Staticsoft.PartitionedStorage.Abstractions" Version="1.0.0-10" />
+        <PackageReference Include="Staticsoft.Serialization.Abstractions" Version="1.0.0-7" />
+        <PackageReference Include="Staticsoft.Extensions.DependencyInjection" Version="1.0.0-3" />
+    </ItemGroup>
+
+</Project>
