@@ -25,6 +25,7 @@
         <PackageReference Include="Staticsoft.PartitionedStorage.Abstractions" Version="1.0.0-10" />
         <PackageReference Include="Staticsoft.Serialization.Abstractions" Version="1.0.0-7" />
         <PackageReference Include="Staticsoft.Extensions.DependencyInjection" Version="1.0.0-3" />
+        <PackageReference Include="Staticsoft.Jobs.Abstractions" Version="1.0.0-3" />
     </ItemGroup>
 
 </Project>
