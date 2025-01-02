@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Staticsoft.Flow.Handlers;
 using Staticsoft.Flow.Internals;
+using Staticsoft.Jobs.Abstractions;
 
 namespace Staticsoft.Flow;
 
@@ -11,7 +12,8 @@ public static class DependencyInjectionExtensions
         .AddSingleton<MessageHandler>()
         .AddScoped<JobContext>()
         .AddScoped(typeof(Job<,>), typeof(JobFlow<,>))
-        .AddScoped(typeof(Operation<,>), typeof(OperationFlow<,>));
+        .AddScoped(typeof(Operation<,>), typeof(OperationFlow<,>))
+        .AddSingleton<Job, StorageCleanupJob>();
 
     public static IServiceCollection UseJob<Job, Input, Output>(this IServiceCollection services)
         where Job : class, Job<Input, Output>
