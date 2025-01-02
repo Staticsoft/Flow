@@ -19,7 +19,7 @@ public static class FlowEndpoints
             var message = JsonSerializer.Deserialize<FlowMessage>(body)
                 ?? throw new NotSupportedException($"Unexpected flow message body: {body}");
 
-            return flow.Process(new() { Id = message.Id, Body = message.Body });
+            await flow.Process(new() { Id = message.Id, Body = message.Body });
         });
 
         return builder;
