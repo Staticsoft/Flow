@@ -21,7 +21,10 @@ public class StartupBase
         .AddSingleton<ItemSerializer, JsonItemSerializer>()
 
         .UseJob<CalculateSumOfSquaresJob, CalculateSumOfSquaresInput, CalculateSumOfSquaresOutput>()
-        .UseOperation<CalculateSquareOperation, CalculateSquareInput, CalculateSquareOutput>();
+        .UseOperation<CalculateSquareOperation, CalculateSquareInput, CalculateSquareOutput>()
+
+        .UseJob<AskForDecisionJob, AskForDecisionInput, AskForDecisionOutput>()
+        .UseOperation<RecordDecisionOperation, RecordDecisionInput, RecordDecisionOutput>();
 
     protected virtual void ConfigureEndpoints(IEndpointRouteBuilder endpoints) { }
 }

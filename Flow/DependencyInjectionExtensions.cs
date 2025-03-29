@@ -13,6 +13,7 @@ public static class DependencyInjectionExtensions
         .AddScoped<JobContext>()
         .AddScoped(typeof(Job<,>), typeof(JobFlow<,>))
         .AddScoped(typeof(Operation<,>), typeof(OperationFlow<,>))
+        .AddScoped<Decision, DecisionFlow>()
         .AddSingleton<Job, StorageCleanupJob>();
 
     public static IServiceCollection UseJob<Job, Input, Output>(this IServiceCollection services)
