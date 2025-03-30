@@ -41,12 +41,6 @@ class OperationFlow<Input, Output>(
         {
             await partition.Save(operationId, operation);
 
-            var operationReference = new OperationDataReference()
-            {
-                JobId = Context.JobId,
-                OperationId = operationId
-            };
-            await Queue.Enqueue(Serializer.Serialize(operationReference));
             throw new OperationNotCompleteException();
         }
     }

@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <PackageReference Include="JeremyEspresso.MurmurHash" Version="0.0.1" />
+        <PackageReference Include="Polly" Version="8.5.2" />
         <PackageReference Include="Staticsoft.Messages.Abstractions" Version="1.0.0-2" />
         <PackageReference Include="Staticsoft.PartitionedStorage.Abstractions" Version="1.0.0-10" />
         <PackageReference Include="Staticsoft.Serialization.Abstractions" Version="1.0.0-7" />
