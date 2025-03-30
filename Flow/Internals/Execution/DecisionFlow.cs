@@ -16,7 +16,10 @@ class DecisionFlow(
     readonly Serializer Serializer = serializer;
     readonly JobContext Context = context;
 
-    public async Task<string> Create(string id)
+    public Task<string> Create(string id)
+        => Retries.Storage(() => CreateDecision(id));
+
+    async Task<string> CreateDecision(string id)
     {
         try
         {
@@ -31,19 +34,15 @@ class DecisionFlow(
         }
         catch (PartitionedStorageItemNotFoundException)
         {
-            try
-            {
-                await Partition.Save(id, new() { JobId = Context.JobId });
-            }
-            catch (PartitionedStorageItemVersionMismatchException)
-            {
-                return await Create(id);
-            }
+            await Partition.Save(id, new() { JobId = Context.JobId });
         }
         throw new OperationNotCompleteException();
     }
 
-    public async Task Make(string id, string choice)
+    public Task Make(string id, string choice)
+        => Retries.Storage(() => MakeDecision(id, choice));
+
+    async Task MakeDecision(string id, string choice)
     {
         try
         {
@@ -58,14 +57,7 @@ class DecisionFlow(
         }
         catch (PartitionedStorageItemNotFoundException)
         {
-            try
-            {
-                await Partition.Save(id, new() { Choice = choice });
-            }
-            catch (PartitionedStorageItemVersionMismatchException)
-            {
-                await Make(id, choice);
-            }
+            await Partition.Save(id, new() { Choice = choice });
         }
     }
 }

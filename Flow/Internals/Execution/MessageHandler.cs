@@ -11,6 +11,7 @@ partial class MessageHandler(
     Partitions partitions,
     Serializer serializer,
     IEnumerable<OperationHandler> operationHandlers,
+    Queue queue,
     IServiceProvider provider
 )
 {
@@ -20,6 +21,7 @@ partial class MessageHandler(
         handler => handler.Name,
         handler => new Generic(handler, serializer)
     );
+    readonly Queue Queue = queue;
     readonly IServiceProvider Provider = provider;
 
     public Task Process(Queue.Message message) => ToReference(message).Type switch
@@ -42,7 +44,32 @@ partial class MessageHandler(
             operationItem.Version
         );
 
-        await ProcessJob(new JobDataReference() { JobId = reference.JobId });
+        var updatedJob = await Retries.Storage(() => UpdateJobProgress(reference.JobId));
+        if (updatedJob.Operations.Completed == updatedJob.Operations.Total)
+        {
+            var jobReference = new JobDataReference()
+            {
+                JobId = reference.JobId
+            };
+            await Queue.Enqueue(Serializer.Serialize(jobReference));
+        }
+    }
+
+    async Task<JobData> UpdateJobProgress(string jobId)
+    {
+        var jobItem = await Partitions.Get<JobData>().Get(jobId);
+        var job = jobItem.Data;
+
+        var updatedJob = job with
+        {
+            Operations = job.Operations with
+            {
+                Completed = job.Operations.Completed + 1
+            }
+        };
+        await Partitions.Get<JobData>().Save(jobId, updatedJob, jobItem.Version);
+
+        return updatedJob;
     }
 
     async Task ProcessJob(JobDataReference reference)
@@ -69,12 +96,39 @@ partial class MessageHandler(
         }
         catch (OperationNotCompleteException)
         {
-            return;
+            await ScheduleJobOperations(reference, jobItem);
         }
-        catch (PartitionedStorageItemVersionMismatchException)
-        {
-            await ProcessJob(reference);
-        }
+    }
+
+    async Task ScheduleJobOperations(JobDataReference reference, Item<JobData> jobItem)
+    {
+        var partitionId = $"{nameof(JobData)}{reference.JobId}";
+        var partition = Partitions.Get<OperationData>(partitionId);
+
+        var operations = await partition.Scan();
+
+        await Partitions.Get<JobData>().Save(
+            reference.JobId,
+            jobItem.Data with
+            {
+                Operations = jobItem.Data.Operations with
+                {
+                    Total = operations.Length,
+                    Completed = operations.Count(operation => operation.Data.IsComplete)
+                }
+            },
+            jobItem.Version
+        );
+
+        var tasks = operations
+            .Select(operation => new OperationDataReference()
+            {
+                JobId = reference.JobId,
+                OperationId = operation.Id
+            })
+            .Select(reference => Queue.Enqueue(Serializer.Serialize(reference)));
+
+        await Task.WhenAll(tasks);
     }
 
     Partition<OperationData> Operations(OperationDataReference reference)
