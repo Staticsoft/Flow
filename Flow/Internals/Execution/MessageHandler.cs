@@ -121,6 +121,7 @@ partial class MessageHandler(
         );
 
         var tasks = operations
+            .Where(operation => !operation.Data.IsComplete)
             .Select(operation => new OperationDataReference()
             {
                 JobId = reference.JobId,
