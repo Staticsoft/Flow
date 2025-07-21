@@ -1,5 +1,4 @@
 ﻿using Staticsoft.Flow.Handlers;
-using Staticsoft.Messages.Abstractions;
 using Staticsoft.PartitionedStorage.Abstractions;
 using Staticsoft.Serialization.Abstractions;
 using System.Text;
@@ -7,14 +6,12 @@ using System.Text;
 namespace Staticsoft.Flow.Internals;
 
 class OperationFlow<Input, Output>(
-    Queue queue,
     Partitions partitions,
     Serializer serializer,
     OperationHandler<Input, Output> handler,
     JobContext context
 ) : Operation<Input, Output>
 {
-    readonly Queue Queue = queue;
     readonly Partitions Partitions = partitions;
     readonly Serializer Serializer = serializer;
     readonly OperationHandler<Input, Output> Handler = handler;
@@ -47,8 +44,8 @@ class OperationFlow<Input, Output>(
 
     string ToOperationId(Input input)
     {
-        var serialized = Serializer.Serialize(input);
-        ReadOnlySpan<byte> span = Encoding.UTF8.GetBytes(serialized).AsSpan();
+        var uniqueData = $"{typeof(Input).Name}-{typeof(Output).Name}-{Serializer.Serialize(input)}";
+        ReadOnlySpan<byte> span = Encoding.UTF8.GetBytes(uniqueData).AsSpan();
         var hash = MurmurHash.MurmurHash3.Hash32(ref span, seed: 0);
         return $"{hash}";
     }
