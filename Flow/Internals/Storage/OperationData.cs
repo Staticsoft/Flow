@@ -1,6 +1,8 @@
-﻿namespace Staticsoft.Flow.Internals;
+﻿using Staticsoft.Flow.State;
 
-record OperationData
+namespace Staticsoft.Flow.Internals;
+
+record OperationData : OperationRecord
 {
     public string Handler { get; init; } = string.Empty;
     public string Input { get; init; } = string.Empty;

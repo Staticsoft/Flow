@@ -1,6 +1,8 @@
-﻿namespace Staticsoft.Flow.Internals;
+﻿using Staticsoft.Flow.State;
 
-record JobData
+namespace Staticsoft.Flow.Internals;
+
+record JobData : JobRecord
 {
     public DateTime CreatedAt { get; init; }
     public string Handler { get; init; } = string.Empty;
@@ -8,4 +10,7 @@ record JobData
     public string Output { get; init; } = string.Empty;
     public bool IsComplete { get; init; } = false;
     public JobOperationsData Operations { get; init; } = new();
+
+    JobOperationsRecord JobRecord.Operations
+        => Operations;
 }
