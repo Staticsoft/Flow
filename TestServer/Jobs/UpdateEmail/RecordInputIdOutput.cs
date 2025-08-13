@@ -1,3 +1,6 @@
 ﻿namespace Staticsoft.TestServer;
 
-public class DecideResponse { }
+public class RecordInputIdOutput
+{
+
+}

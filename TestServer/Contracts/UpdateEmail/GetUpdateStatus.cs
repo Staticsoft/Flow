@@ -1,6 +1,6 @@
 ﻿namespace Staticsoft.TestServer;
 
-public class GetChoiceRequest
+public class GetUpdateStatus
 {
     public required string JobId { get; init; }
 }

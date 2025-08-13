@@ -23,8 +23,9 @@ public class StartupBase
         .UseJob<CalculateSumOfSquaresJob, CalculateSumOfSquaresInput, CalculateSumOfSquaresOutput>()
         .UseOperation<CalculateSquareOperation, CalculateSquareInput, CalculateSquareOutput>()
 
-        .UseJob<AskForDecisionJob, AskForDecisionInput, AskForDecisionOutput>()
-        .UseOperation<RecordDecisionOperation, RecordDecisionInput, RecordDecisionOutput>();
+        .UseJob<UpdateEmailJob, UpdateEmailJobInput, UpdateEmailJobOutput>()
+        .UseOperation<RecordInputOperation, RecordInputIdInput, RecordInputIdOutput>()
+        .UseOperation<UpdateEmailOperation, UpdateEmailOperationInput, UpdateEmailOperationOutput>();
 
     protected virtual void ConfigureEndpoints(IEndpointRouteBuilder endpoints) { }
 }

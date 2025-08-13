@@ -1,5 +1,4 @@
-﻿using Staticsoft.Contracts.Abstractions;
-using Staticsoft.PartitionedStorage.Abstractions;
+﻿using Staticsoft.PartitionedStorage.Abstractions;
 using Staticsoft.TestServer;
 using Xunit;
 
@@ -8,8 +7,11 @@ namespace Staticsoft.Flow.Tests;
 public abstract class FlowTests<Startup> : TestBase<Startup>
     where Startup : class
 {
-    Partition<UserDecision> Decisions
-        => Server<Partitions>().Get<UserDecision>();
+    Partition<ExternalInputs> ExternalInputs
+        => Server<Partitions>().Get<ExternalInputs>();
+
+    Partition<User> Users
+        => Server<Partitions>().Get<User>();
 
     [Fact]
     public async Task RunsJobUntilCompletion()
@@ -37,32 +39,40 @@ public abstract class FlowTests<Startup> : TestBase<Startup>
     }
 
     [Fact]
-    public async Task RunsJobWithDecision()
+    public async Task RunsJobWithExternalInput()
     {
-        var askForDecisionResponse = await Api.Decisions.AskForDecision.Execute();
-        var jobId = askForDecisionResponse.JobId;
+        var inputs = new ExternalInputs() { Ids = [] };
+        await ExternalInputs.Save("Ids", inputs);
 
-        var decisions = Array.Empty<Item<UserDecision>>();
-        while (decisions.Length != 1)
+        await Users.Save("User", new() { Email = "old@email.com" });
+
+        var updateEmailResponse = await Api.UpdateEmail.Update.Execute(new()
         {
-            decisions = await Decisions.Scan();
-            if (decisions.Length != 1)
+            UserId = "User",
+            NewEmail = "new@email.com"
+        });
+        var jobId = updateEmailResponse.JobId;
+
+        while (inputs.Ids.Length == 0)
+        {
+            var item = await ExternalInputs.Get("Ids");
+            inputs = item.Data;
+            if (inputs.Ids.Length == 0)
             {
                 await Task.Delay(1000);
             }
         }
-        var decision = decisions.Single();
 
-        await Api.Decisions.Decide.Execute(new()
+        await Api.UpdateEmail.Confirm.Execute(new()
         {
-            DecisionId = decision.Id,
-            Choice = "Choice"
+            ExternalInputId = inputs.Ids.Single(),
+            Confirm = true
         });
 
         var isCompleted = false;
         while (!isCompleted)
         {
-            var statusResponse = await Api.Decisions.GetDecisionStatus.Execute(new() { JobId = jobId });
+            var statusResponse = await Api.UpdateEmail.GetDecisionStatus.Execute(new() { JobId = jobId });
             isCompleted = statusResponse.IsCompleted;
             if (!isCompleted)
             {
@@ -70,7 +80,7 @@ public abstract class FlowTests<Startup> : TestBase<Startup>
             }
         }
 
-        var response = await Api.Decisions.GetChoice.Execute(new() { JobId = jobId });
-        Assert.Equal("Choice", response.Choice);
+        var user = await Users.Get("User");
+        Assert.Equal("new@email.com", user.Data.Email);
     }
 }
