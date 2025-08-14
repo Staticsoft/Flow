@@ -1,6 +1,6 @@
 ﻿namespace Staticsoft.TestServer;
 
-public class AskForDecisionResponse
+public class UpdateEmailResponse
 {
     public required string JobId { get; init; }
 }

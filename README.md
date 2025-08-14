@@ -1,12 +1,12 @@
 # Staticsoft Flow
 
-A .NET 8 workflow orchestration library that enables building resilient, distributed job processing systems with support for long-running operations, decision points, and automatic retry mechanisms.
+A .NET 8 workflow orchestration library that enables building resilient, distributed job processing systems with support for long-running operations, external input points, and automatic retry mechanisms.
 
 ## Overview
 
 Flow is designed to handle complex workflows that may involve:
 - **Long-running operations** that can be paused and resumed
-- **Decision points** that require external input
+- **External input points** that require data from external sources
 - **Distributed processing** across multiple workers
 - **Automatic retry** and error handling
 - **Progress tracking** for multi-step jobs
@@ -15,7 +15,7 @@ Flow is designed to handle complex workflows that may involve:
 
 - **Job Orchestration**: Define complex workflows as jobs composed of multiple operations
 - **Operation Isolation**: Each operation is independently tracked and can be retried
-- **Decision Support**: Built-in support for workflows that require human or external decisions
+- **External Input Support**: Built-in support for workflows that require external data input
 - **Multiple Deployment Models**: Support for both local execution and AWS Lambda
 - **Progress Tracking**: Real-time status updates for running jobs
 - **Fault Tolerance**: Automatic retry mechanisms and graceful error handling
@@ -27,7 +27,7 @@ Flow is designed to handle complex workflows that may involve:
 
 - **Job**: A workflow composed of multiple operations that produces an output from an input
 - **Operation**: An atomic unit of work that can be executed independently
-- **Decision**: A point in the workflow that requires external input to proceed
+- **ExternalInput**: A point in the workflow that requires external data to proceed
 - **Handler**: The execution logic for jobs and operations
 
 ### Components
@@ -122,31 +122,52 @@ if (status.IsCompleted)
 }
 ```
 
-## Working with Decisions
+## Working with External Inputs
 
-Flow supports workflows that require external decisions:
+Flow supports workflows that require external data input:
 
 ```csharp
-public class AskForDecisionJob : Job<AskForDecisionInput, AskForDecisionOutput>
+public class UpdateEmailJob : Job<UpdateEmailJobInput, UpdateEmailJobOutput>
 {
-    private readonly Decision _decision;
+    private readonly ExternalInput<ConfirmExternalInputSeed, ConfirmExternalInput> _externalInput;
+    private readonly Operation<UpdateEmailOperationInput, UpdateEmailOperationOutput> _updateEmail;
 
-    public AskForDecisionJob(Decision decision)
+    public UpdateEmailJob(
+        ExternalInput<ConfirmExternalInputSeed, ConfirmExternalInput> externalInput,
+        Operation<UpdateEmailOperationInput, UpdateEmailOperationOutput> updateEmail)
     {
-        _decision = decision;
+        _externalInput = externalInput;
+        _updateEmail = updateEmail;
     }
 
-    public async Task<AskForDecisionOutput> Execute(AskForDecisionInput input)
+    public async Task<UpdateEmailJobOutput> Execute(UpdateEmailJobInput input)
     {
-        // This will pause execution until a decision is made
-        var choice = await _decision.Create(input.DecisionId);
-        return new AskForDecisionOutput { Choice = choice };
+        // Create external input with seed data
+        var confirmationInput = _externalInput.Create(new ConfirmExternalInputSeed
+        {
+            UserId = input.UserId,
+            NewEmail = input.NewEmail
+        });
+
+        // This will pause execution until external data is provided
+        var providedInput = await confirmationInput.Get();
+        
+        if (providedInput.Confirm)
+        {
+            await _updateEmail.Execute(new UpdateEmailOperationInput 
+            { 
+                UserId = input.UserId, 
+                NewEmail = input.NewEmail 
+            });
+        }
+
+        return new UpdateEmailJobOutput();
     }
 }
 
-// Making a decision externally
-var decision = serviceProvider.GetRequiredService<Decision>();
-await decision.Make("decision-id", "approved");
+// Providing external data from an API endpoint
+var externalInput = serviceProvider.GetRequiredService<ExternalInput>();
+await externalInput.Provide("job-id:input-id", new ConfirmExternalInput { Confirm = true });
 ```
 
 ## Deployment Options
@@ -172,7 +193,7 @@ services.UseFlow()
 3. **Operation Scheduling**: When operations are encountered, they're scheduled as separate messages
 4. **Operation Execution**: Each operation runs independently and stores its result
 5. **Job Completion**: Once all operations complete, the job resumes and produces its final result
-6. **Decision Handling**: Decision points pause execution until external input is provided
+6. **External Input Handling**: External input points pause execution until data is provided
 
 ## Storage Requirements
 
@@ -185,7 +206,7 @@ Flow requires implementations of:
 
 The project includes comprehensive tests demonstrating:
 - Complete job execution with multiple operations
-- Decision-based workflows
+- External input-based workflows
 - Progress tracking
 - Error handling and retries
 
@@ -199,7 +220,7 @@ dotnet test Flow.Tests
 The repository includes a complete test server (`TestServer`) that demonstrates:
 - REST API endpoints for job management
 - Complex workflows with parallel operations
-- Decision-based workflows
+- External input-based workflows
 - Both local and Lambda deployment configurations
 
 ## License
