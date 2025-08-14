@@ -72,7 +72,7 @@ public abstract class FlowTests<Startup> : TestBase<Startup>
         var isCompleted = false;
         while (!isCompleted)
         {
-            var statusResponse = await Api.UpdateEmail.GetDecisionStatus.Execute(new() { JobId = jobId });
+            var statusResponse = await Api.UpdateEmail.GetConfirmationStatus.Execute(new() { JobId = jobId });
             isCompleted = statusResponse.IsCompleted;
             if (!isCompleted)
             {

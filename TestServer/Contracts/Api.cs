@@ -2,9 +2,9 @@
 
 public class Api(
     SumOfSquares sumOfSquares,
-    UpdateEmail decisions
+    UpdateEmail updateEmail
 )
 {
     public SumOfSquares SumOfSquares { get; } = sumOfSquares;
-    public UpdateEmail UpdateEmail { get; } = decisions;
+    public UpdateEmail UpdateEmail { get; } = updateEmail;
 }

@@ -22,26 +22,32 @@ class ExternalInputFlow(
         };
 
     Task Provide<Data>(string jobId, string id, Data input)
-        => Retries.Storage(() => ProvideInput(jobId, id, input));
-
-    async Task ProvideInput<Data>(string jobId, string id, Data input)
     {
         var partition = Partitions.Get<ExternalInputData>($"{nameof(ExternalInputData)}{jobId}");
-
         var serializedInput = Serializer.Serialize(input);
 
+        return Retries.Storage(() => ProvideInput<Data>(partition, jobId, id, serializedInput));
+    }
+
+    async Task ProvideInput<Data>(
+        Partition<ExternalInputData> partition,
+        string jobId,
+        string id,
+        string input
+    )
+    {
         try
         {
             var item = await partition.Get(id);
 
-            await partition.Save(id, item.Data with { Input = serializedInput }, item.Version);
+            await partition.Save(id, item.Data with { Input = input }, item.Version);
+
+            await TriggerJob(jobId);
         }
         catch (PartitionedStorageItemNotFoundException)
         {
-            await partition.Save(id, new() { Input = serializedInput });
+            await partition.Save(id, new() { Input = input });
         }
-
-        await TriggerJob(jobId);
     }
 
     async Task TriggerJob(string jobId)
@@ -61,46 +67,50 @@ class ExternalInputFlow<Seed, Data>(
     DataConverter<Seed, Data> converter
 ) : ExternalInput<Seed, Data>
 {
-    readonly Partition<ExternalInputData> Partition = partitions.Get<ExternalInputData>($"{nameof(ExternalInputData)}{context.JobId}");
+    readonly Partitions Partitions = partitions;
     readonly Serializer Serializer = serializer;
     readonly JobContext Context = context;
     readonly DataConverter<Seed, Data> Converter = converter;
 
-    class ResolvedInput(
-        string id,
-        Data input
-    ) : ExternalInput<Data>
+    public ExternalInput<Data> Create(Seed input)
     {
-        public string Id { get; } = id;
-
-        public Data Input { get; } = input;
+        var id = Converter.ToId(input);
+        return new Input(Partitions, Serializer, Context.JobId, id);
     }
 
-    class UnresolvedInput(
+    class Input(
+        Partitions partitions,
+        Serializer serializer,
+        string jobId,
         string id
     ) : ExternalInput<Data>
     {
-        public string Id { get; } = id;
+        readonly Partition<ExternalInputData> Partition
+            = partitions.Get<ExternalInputData>($"{nameof(ExternalInputData)}{jobId}");
+        readonly Serializer Serializer = serializer;
+        readonly string InputId = id;
 
-        public Data Input
-            => throw new OperationNotCompleteException();
-    }
+        public string Id { get; } = $"{jobId}:{id}";
 
-    public async Task<ExternalInput<Data>> Create(Seed input)
-    {
-        var id = Converter.ToId(input);
-        var externalId = $"{Context.JobId}:{id}";
+        public Task<Data> Get()
+            => Retries.Storage(GetInput);
 
-        try
+        async Task<Data> GetInput()
         {
-            var item = await Partition.Get(id);
-            if (string.IsNullOrEmpty(item.Data.Input)) return new UnresolvedInput(externalId);
+            try
+            {
+                var item = await Partition.Get(InputId);
 
-            return new ResolvedInput(externalId, Serializer.Deserialize<Data>(item.Data.Input));
-        }
-        catch (PartitionedStorageItemNotFoundException)
-        {
-            return new UnresolvedInput(externalId);
+                if (string.IsNullOrEmpty(item.Data.Input)) throw new OperationNotCompleteException();
+
+                return Serializer.Deserialize<Data>(item.Data.Input);
+            }
+            catch (PartitionedStorageItemNotFoundException)
+            {
+                await Partition.Save(InputId, new() { });
+
+                throw new OperationNotCompleteException();
+            }
         }
     }
 }

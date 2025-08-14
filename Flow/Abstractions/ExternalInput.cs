@@ -2,13 +2,13 @@
 
 public interface ExternalInput<Seed, Data>
 {
-    Task<ExternalInput<Data>> Create(Seed input);
+    ExternalInput<Data> Create(Seed input);
 }
 
 public interface ExternalInput<Data>
 {
     string Id { get; }
-    Data Input { get; }
+    Task<Data> Get();
 }
 
 public interface ExternalInput

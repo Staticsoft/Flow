@@ -14,15 +14,15 @@ public class UpdateEmailJob(
 
     public async Task<UpdateEmailJobOutput> Execute(UpdateEmailJobInput input)
     {
-        var externalInput = await ExternalInput.Create(new()
+        var confirmationInput = ExternalInput.Create(new()
         {
             UserId = input.UserId,
             NewEmail = input.NewEmail
         });
 
-        await RecordInput.Execute(new() { InputId = externalInput.Id });
+        await RecordInput.Execute(new() { InputId = confirmationInput.Id });
 
-        var providedInput = externalInput.Input;
+        var providedInput = await confirmationInput.Get();
         if (providedInput.Confirm)
         {
             await UpdateEmail.Execute(new() { UserId = input.UserId, NewEmail = input.NewEmail });

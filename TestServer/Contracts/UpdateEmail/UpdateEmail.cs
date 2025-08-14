@@ -17,5 +17,5 @@ public class UpdateEmail(
     public HttpEndpoint<ConfirmRequest, ConfirmResponse> Confirm { get; } = confirm;
 
     [Endpoint(HttpMethod.Post)]
-    public HttpEndpoint<GetUpdateStatus, JobStatus> GetDecisionStatus { get; } = getUpdateStatus;
+    public HttpEndpoint<GetUpdateStatus, JobStatus> GetConfirmationStatus { get; } = getUpdateStatus;
 }
