@@ -1,0 +1,16 @@
+﻿@inherits LayoutComponentBase
+
+<HeadContent>
+    <RadzenTheme Theme="software" />
+</HeadContent>
+
+<RadzenLayout Style="grid-template-columns: auto 1fr auto; grid-template-areas: 'rz-header rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
+    <RadzenSidebar>
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Inspector" Path="/Flow/Inspector" Icon="troubleshoot" />
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+    <RadzenBody>
+        @Body
+    </RadzenBody>
+</RadzenLayout>

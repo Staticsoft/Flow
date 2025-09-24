@@ -10,7 +10,7 @@ public class StartupBase
     public void ConfigureServices(IServiceCollection services)
         => RegisterServices(services);
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment _) => app
+    public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment _) => app
         .UseRouting()
         .UseServerAPIRouting<Api>()
         .UseEndpoints(ConfigureEndpoints);

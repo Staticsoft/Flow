@@ -1,0 +1,19 @@
+@page "/Flow/Inspector"
+
+@inject Schema Api
+
+@foreach (var job in Jobs)
+{
+    <div>@job.Id</div>
+}
+
+@code
+{
+    Flow.Inspector.ListJobsResponse.Job[] Jobs { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Api.Flow.ListJobs.Execute();
+        Jobs = response.Jobs;
+    }
+}

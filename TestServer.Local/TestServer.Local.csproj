@@ -9,12 +9,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\TestServer.Frontend\TestServer.Frontend.csproj" />
       <ProjectReference Include="..\TestServer\TestServer.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Staticsoft.Messages.Memory" Version="1.0.0-2" />
         <PackageReference Include="Staticsoft.PartitionedStorage.Memory" Version="1.0.0-10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.15" />
     </ItemGroup>
 
 </Project>
